@@ -1,0 +1,20 @@
+一.考试类
+    1.1 软考网
+        -三方网站(有考试时间信息等)
+            http://www.cnitpm.com/pm1/71779.html
+        -官网
+            http://www.shaanxirk.com/rk/f
+    1.2 技术网站
+        技术	            名称	官网
+        Spring          Framework容器	http://projects.spring.io/spring-framework
+        Spring Boot	    MVC框架	        https://spring.io/projects/spring-boot
+        Apache Shiro    安全框架	        http://shiro.apache.org
+        Spring session  分布式Session管理	http://projects.spring.io/spring-session
+        MyBatis	        ORM框架	        http://www.mybatis.org
+        Freemarker	    视图框架	        http://freemarker.foofun.cn
+        PageHelper	    MyBatis分页插件	http://git.oschina.net/free/Mybatis_PageHelper
+        Log4J	        日志组件	        http://logging.apache.org
+        Maven	        项目构建	        http://maven.apache.org
+        Elasticsearch	分布式搜索引擎	https://www.elastic.co
+        Redis	        分布式缓存数据库	https://redis.io
+        hutool	        工具类	        http://hutool.mydoc.io

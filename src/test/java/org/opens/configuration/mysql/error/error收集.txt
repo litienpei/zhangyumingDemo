@@ -1,0 +1,21 @@
+一.mysql日常error收集
+    1.1 错误代码-1052
+        -执行的sql
+            SELECT
+            	question
+            FROM
+            	cus_knowledge_apply AS t1
+            	LEFT JOIN cus_question_answer AS t2 ON t1.question = t2.question
+        -错误信息
+            1052 - Column 'question' in field list is ambiguous
+            --中文
+                字段列表中的列“question”含义模糊
+        -说明
+            这个查询使用了左连接, 以t1.question = t2.question为条件, 这两个表都有question字段, 最后输出question字段忘
+            记指明是哪个表的question, 所以报错该字段含义模糊.
+        -修复
+            SELECT
+                t1.question     #或者t2.question
+            FROM
+                cus_knowledge_apply AS t1
+                LEFT JOIN cus_question_answer AS t2 ON t1.question = t2.question

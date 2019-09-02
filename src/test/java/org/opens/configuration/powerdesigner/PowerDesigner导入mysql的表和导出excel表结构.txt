@@ -1,0 +1,149 @@
+一.场景
+    1.1 场景1介绍
+        在公司中可能会接手已经开始了一段时间的项目, 如果从程序中去理解代码会较困难, 会碰到以下问题:
+            -从程序中理解数据库表结构设计碰到的问题
+                1.很难理解表之间的关系, 当表数量多时, 几乎做不到;
+                2.有的项目中代码中没有注释字段的作用, 但是在数据库中有注释;
+            -总结
+                所以如何把表结构导入为可视化的物理模型是非常有助于理解代码的.
+    1.2 场景2介绍
+        在项目完成之后编写<<数据库设计说明书>>时, 会用到表物理模型的截图和表结构的excel表格文件.
+
+二.使用PowerDesigner导入mysql的表&将表结构导出为excel
+    2.1 将mysql的表结构导入为物理模型
+        -简介
+            原理是让PowerDesigner连接上mysql, 然后选择好要导入的表, 就可以自动导入了, 我们要做的工作就是"如何让PowerD
+            esigner"连接上mysql.
+        -让PowerDesigner连接上mysql
+            1. 新建物理模型(选择mysql的版本);
+            2. datebase -> configure connection -> connection profiles
+            3. add data source 填写以下信息:
+                connection profile : #连接名称
+                directory : #不用管这个, 默认就可以
+                description : #不填这个, 空着
+                connection type : JDBC
+                dbms type : #数据库类型选择, 连接的是mysql就选择mysql
+                server : #不用管这个
+                database name : #不用管这个
+                user name : #数据库的用户名
+                JDBC driver class : #选择数据库的连接驱动名称, mysql5是com.mysql.jdbc.driver, mysql8是com.mysql
+                                     .cj.jdbc.Driver
+                JDBC connection url : #数据库连接url
+                JDBC driver jar file : #选择jar驱动
+            4. 然后点击test connection, 查看是否能连接上数据库. (!这里有一个非常需要注意的地方)
+            5. datebase -> updata model from database
+                1. 选择使用数据源, 确定;
+                2. 选择Data source为connection profile, 然后选择刚刚创建的数据库连接;
+                3. 最后输入数据库账户的密码, 就可以连上数据库了.
+            6. 选择要反向生成的表
+                要注意的是, 这里有一个坑就是连接上后默认是全部库全部都选中的, 所以需要先deselect all, 再active page,
+                然后确认就可以了.
+        -上一章节中第4步需要注意的地方
+            目前开发者使用的jdk以64位居多, 但是PowerDesigner只能使用32位的java, 使用64位jdk会连不上数据库.
+    2.2 通过PowerDesigner将物理模型转换为excel
+        -简介
+            适用于编写<<数据库设计说明书>>.
+        -流程
+            1. tool -> execute commands -> Edit/run script
+            2. 粘入以下内容, 确定就可以生成excel, 注意的是这个excel是临时的, 需要保存.
+                '******************************************************************************
+                '* File:     pdm2excel.txt
+                '* Title:    pdm export to excel
+                '* Purpose:  To export the tables and columns to Excel
+                '* Model:    Physical Data Model 16.5 , Microsoft Office 2007
+                '* Objects:  Table, Column, View
+                '******************************************************************************
+                Option Explicit
+                   Dim rowsNum
+                   rowsNum = 0
+                '-----------------------------------------------------------------------------
+                ' Main function
+                '-----------------------------------------------------------------------------
+                ' Get the current active model
+                Dim Model
+                Set Model = ActiveModel
+                If (Model Is Nothing) Or (Not Model.IsKindOf(PdPDM.cls_Model)) Then
+                  MsgBox "The current model is not an PDM model."
+                Else
+                 ' Get the tables collection
+                 '创建EXCEL APP
+                 dim beginrow
+                 DIM EXCEL, SHEET
+                 set EXCEL = CREATEOBJECT("Excel.Application")
+                 EXCEL.workbooks.add(-4167)'添加工作表
+                 EXCEL.workbooks(1).sheets(1).name ="test"
+                 set sheet = EXCEL.workbooks(1).sheets("test")
+                 ShowProperties Model, SHEET
+                 EXCEL.visible = true
+                 '设置列宽和自动换行
+                 sheet.Columns(1).ColumnWidth = 20
+                 sheet.Columns(2).ColumnWidth = 40
+                 sheet.Columns(4).ColumnWidth = 20
+                 sheet.Columns(5).ColumnWidth = 20
+                 sheet.Columns(6).ColumnWidth = 15
+                 sheet.Columns(1).WrapText =true
+                 sheet.Columns(2).WrapText =true
+                 sheet.Columns(4).WrapText =true
+                 End If
+                '-----------------------------------------------------------------------------
+                ' Show properties of tables
+                '-----------------------------------------------------------------------------
+                Sub ShowProperties(mdl, sheet)
+                   ' Show tables of the current model/package
+                   rowsNum=0
+                   beginrow = rowsNum+1
+                   ' For each table
+                   output "begin"
+                   Dim tab
+                   For Each tab In mdl.tables
+                      ShowTable tab,sheet
+                   Next
+                   if mdl.tables.count > 0 then
+                        sheet.Range("A" & beginrow + 1 & ":A" & rowsNum).Rows.Group
+                   end if
+                   output "end"
+                End Sub
+                '-----------------------------------------------------------------------------
+                ' Show table properties
+                '-----------------------------------------------------------------------------
+                Sub ShowTable(tab, sheet)
+                   If IsObject(tab) Then
+                     Dim rangFlag
+                     rowsNum = rowsNum + 1
+                      ' Show properties
+                      Output "================================"
+                      sheet.cells(rowsNum, 1) = "实体名"
+                      sheet.cells(rowsNum, 2) =tab.name
+                      sheet.cells(rowsNum, 3) = ""
+                      sheet.cells(rowsNum, 4) = "表名"
+                      sheet.cells(rowsNum, 5) = tab.code
+                      sheet.Range(sheet.cells(rowsNum, 5),sheet.cells(rowsNum, 6)).Merge
+                      rowsNum = rowsNum + 1
+                      sheet.cells(rowsNum, 1) = "属性名"
+                      sheet.cells(rowsNum, 2) = "说明"
+                      sheet.cells(rowsNum, 3) = ""
+                      sheet.cells(rowsNum, 4) = "字段中文名"
+                      sheet.cells(rowsNum, 5) = "字段名"
+                      sheet.cells(rowsNum, 6) = "字段类型"
+                      '设置边框
+                      sheet.Range(sheet.cells(rowsNum-1, 1),sheet.cells(rowsNum, 2)).Borders.LineStyle = "1"
+                      sheet.Range(sheet.cells(rowsNum-1, 4),sheet.cells(rowsNum, 6)).Borders.LineStyle = "1"
+                Dim col ' running column
+                Dim colsNum
+                colsNum = 0
+                      for each col in tab.columns
+                        rowsNum = rowsNum + 1
+                        colsNum = colsNum + 1
+                      sheet.cells(rowsNum, 1) = col.name
+                      sheet.cells(rowsNum, 2) = col.comment
+                        sheet.cells(rowsNum, 3) = ""
+                      sheet.cells(rowsNum, 4) = col.name
+                      sheet.cells(rowsNum, 5) = col.code
+                      sheet.cells(rowsNum, 6) = col.datatype
+                      next
+                      sheet.Range(sheet.cells(rowsNum-colsNum+1,1),sheet.cells(rowsNum,2)).Borders.LineStyle = "2"
+                      sheet.Range(sheet.cells(rowsNum-colsNum+1,4),sheet.cells(rowsNum,6)).Borders.LineStyle = "2"
+                      rowsNum = rowsNum + 1
+                      Output "FullDescription: "       + tab.Name
+                   End If
+                End Sub

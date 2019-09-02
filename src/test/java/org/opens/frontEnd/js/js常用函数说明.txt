@@ -1,0 +1,7 @@
+一. .js函数
+    1.1 浏览器行为函数
+   	-回退函数
+   	    --标签
+            1.<button onclick="javascript:history.go(-1);"></button>
+        --说明
+            javascript:history.go(-1);表示点击事件触发执行返回上一页操作.

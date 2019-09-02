@@ -1,0 +1,44 @@
+一.简介
+    就是用来查看mysql系统信息的函数.
+二.函数介绍
+    2.1 CHARSET()函数
+        -语法
+            CHARSET(str)
+            --参数
+                str : 字符串参数
+        -功能
+            查看参数的编码格式.
+        -实例
+            --实例1
+                指令: select CHARSET('asd')
+                输出: utf8mb4
+                说明: 这个指令虽然是查看指定字符的, 但是也可以理解为查看当前数据库的编码信息.
+    2.2 VERSION()函数
+        -语法
+            VERSION()
+        -功能
+            查看mysql的版本
+        -实例
+            指令: select VERSION()
+            输出: 8.0.12
+    2.3 SCHEMA()/DATABASE()函数
+        -语法
+            DATABASE()
+            SCHEMA()
+        -功能
+            查看当前选中的数据库名称.
+        -实例
+            --实例1
+                指令: select SCHEMA()
+                输出: shiyan
+            --实例2
+                指令: select DATABASE()
+                输出: shiyan
+    2.4 USER()、SYSTEM_USER()、SESSION_USER()、CURRENT_USER()函数
+        -语法
+            USER()
+            SYSTEM_USER()
+            SESSION_USER()
+            CURRENT_USER()
+        -功能
+            获取当前用户名.

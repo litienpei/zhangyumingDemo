@@ -1,0 +1,54 @@
+一.sql解析样例
+    1.1 样例1-统计某一个字段的数量, 输出数量最多的10条
+        -sql
+            SELECT
+                a.id AS qaId,
+                b.count,
+                b.question,
+                b.knowledge_type
+            FROM
+                ( SELECT question, count(*) AS count, knowledge_type FROM cus_knowledge_apply WHERE question <> 'null' GROUP BY question ORDER BY count DESC ) b
+                LEFT JOIN cus_question_answer a ON a.question = b.question
+            WHERE
+                a.id != 'null'
+            ORDER BY
+                count DESC
+                LIMIT 10
+        -执行流程
+            1.最内层查询SELECT question, count(*) AS count, knowledge_type FROM cus_knowledge_apply WHERE question <> 'null' GROUP BY question ORDER BY count DESC
+              查询出要统计的表的所有数据.
+              ↓
+            2.使用左连接进行外连接查询出符合要求的数据
+              ↓
+            3.最后使用ORDER BY对统计字段进行排序, 然后使用limit进行条数控制.
+    1.2 样例2-查询某个时间段之内的有效数据率(有效数据率 = 有效数据 / 全部数据)
+        -sql
+            SELECT
+                b.days AS date,
+                b.qaCount AS qaCount,
+                b.hitCount AS hitCount,
+                CONVERT (
+                    b.hitCount / b.qaCount * 100,
+                DECIMAL ( 5, 2 )) AS rate
+            FROM
+                (
+                SELECT
+                    COUNT( 1 ) AS qaCount,
+                    COUNT( a.knowledge_feedback > 1 OR NULL ) AS hitCount,
+                    DATE_FORMAT( a.chat_create_date, '%Y-%m-%d' ) AS days
+                FROM
+                    cus_knowledge_apply a
+                WHERE
+                    a.chat_create_date BETWEEN '2019-07-30'
+                    AND date_add( '2019-08-29', INTERVAL 1 DAY )
+                GROUP BY
+                days
+                ) b
+        -执行流程
+            1.这个查询是一个非关联子查询, 所以内层查询先执行;     #[非]关联查询寻可以参考..\query\[不]相关子查询介绍.txt
+              ↓
+            2.分组是优先于select执行的, 就是虽然group在后面, 但是是先于select, count(1)这条语句执行的;
+              ↓(得到分组后的数据)
+            3.对分组后的数据执行条件筛选select...where..., 然后执行count(1), COUNT( a.knowledge_feedback > 1 OR NULL )统计;
+              ↓(然后执行外层查询)
+            4.得到结果集交给mybatis/jpa进行封装.

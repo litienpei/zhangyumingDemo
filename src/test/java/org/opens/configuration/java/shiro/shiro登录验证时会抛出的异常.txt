@@ -1,0 +1,43 @@
+一.使用场景
+    1.1 简介
+        -网站不能被任意访问是一个很重要的问题, 因为无效访问带来的垃圾数据进而带来的损失都由网站本身所承担, 所以为网站添加防御措施
+        非常重要;
+        -另一方面, 如果你向外提供api, 在不考虑是否被恶意访问的情况下(也不考虑成本), 怎么只暴露api而不暴露系统关键部分, 也是非常
+        重要的;
+        -而shiro就是为了这个出现的, 它能为你的网站的用户提供良好的密码加密规则, 以及授权认证, 即不同的角色只能访问它们被授权的ap
+        i, 并且你还要向外开放部分api而不暴露系统关键部分, shiro都能帮你实现.
+二.shiro的认证和配置
+    2.1 shiro的配置
+        -配置简介(在spring boot中)
+            shiro在spring boot中根据其认证流程, 需要配置一些内容:
+                1. 安全认证管理器-SecurityManager;
+                2. shiro的过滤器-ShiroFilterFactoryBean;
+                3. shiro的Realm源(自定义类继承AuthorizingRealm实现两个方法), Realm源用来访问数据源, 因为用户信息一般都保
+                   存在数据库中;
+                4. (可选)shiro密码加密校验器-HashedCredentialsMatcher, 这个类可以加密用户的密码, 并且在登录时自动判断密码
+                   是否正确.
+                5. (似乎是可选)shiro注解开启-AuthorizationAttributeSourceAdvisor, 具体作用不详, 据说是用来开启shiro注
+                   解的.
+        -详细配置
+            参考: org.opens.configure.ShiroConfig
+    2.2 shiro的异常
+        -简介
+            之所以介绍这个, 是因为shiro在验证用户信息时, 如果用户信息不正确, 则会直接抛出相应的异常, 程序员可以捕获不同的异常来
+            判断发生了什么异常, 例如账号不存在和账号密码错误时两个不同的验证异常, 但是如果提示的这个准确会给不法分子提供帮助, 所
+            以一般做法是用户名错误和账号错误提示错误"账号或密码错误", 账户不存在提示"账户不存在".
+        -shiro登录验证抛出的错误
+            --继承图
+                AuthenticationException                 身份验证异常
+                    AccountException                    帐号异常
+                        DisabledAccountException        账号禁用异常
+                            LockedAccountException      帐号锁定异常
+                        ConcurrentAccessException       并发访问异常
+                        ExcessiveAttemptsException      过度的尝试异常(就是重复输入错误的密码)
+                        UnknownAccountException         未知的帐号异常
+                    CredentialsException                凭证异常(也就是密码异常)
+                        IncorrectCredentialsException   不正确的凭证异常
+                        ExpiredCredentialsException     过期的证书(密码)异常
+                    UnsupportedTokenException           不支持的标记异常
+            --总结
+                    IncorrectCredentialsException和AccountException时常用的异常, 但是使用时要注意提示信息不要帮助到非
+                    法分子.

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.opens.mybatisplus.dao.UserMapper">
+    <resultMap id="BaseResultMap" type="org.opens.mybatisplus.pojo.UserDemo">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="old" jdbcType="INTEGER" property="old"/>
+    </resultMap>
+
+    <!-- xml中需要注意大于等于号等特殊符号,需要进行转义 -->
+    <select id="selectByPageTTDatabase" resultMap="BaseResultMap">
+        select id, name, old from jpa_user
+        <where>
+            <if test="id != null">
+                id = #{id}
+            </if>
+            <if test="name != null">
+                name = #{name}
+            </if>
+        </where>
+        limit #{pageNumber}, #{pageSize}
+    </select>
+
+</mapper>

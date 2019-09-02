@@ -1,0 +1,19 @@
+一.场景
+    1.1 简介
+        -需求
+            将公司的数据库导入PowerDesigner为模型, 排好版之后截图给<<数据库设计说明书使用>>.
+        -碰到的问题
+            PowerDesigner只能支持32位的java连接数据库, 64位的会一直报错连接失败, 所以安装了32位java, 但是在安装之后,
+            碰到了另外一个问题: 切换环境变量%JAVA_HOME%的值不起作用, 始终都是刚安装的32位java在其作用, 开始以为是32位
+            java会自动屏蔽64位, 但是后来觉得不是这样, 命令可以快速执行是因为设置了环境变量, 所以再次检查了环境变量配置.
+        -解决办法
+            --再次检查环境变量的发现
+                C:\Program Files (x86)\Common Files\Oracle\Java\javapath;
+                ---说明
+                    有一个疑似和java相关的环境变量, 然后就去这个文件夹下查看和百度, 发现了两个问题:
+                    1. 这个目录下有java.exe, javaw.exe, javaws.exe三个java指令;
+                    2. windows的环境变量重名时, 按照短路逻辑匹配(谁近走谁);
+                ---结论
+                    这个环境变量短路了JAVA_HOME环境变量, 导致刚安装的32位java短路了64位java.
+                ---解决办法
+                    将C:\Program Files (x86)\Common Files\Oracle\Java\javapath;环境变量移动到最下面即可.

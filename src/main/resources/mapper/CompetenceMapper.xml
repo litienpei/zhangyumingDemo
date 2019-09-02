@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.opens.shiro.dao.CompetenceMapper">
+    <resultMap id="BaseResultMap" type="org.opens.shiro.pojo.Competence">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="url" jdbcType="VARCHAR" property="url"/>
+    </resultMap>
+
+    <!-- xml中需要注意大于等于号等特殊符号,需要进行转义 -->
+
+    <select id="getPermissionBasedOnRoleId" resultType="String">
+        SELECT
+            t2.url
+        FROM
+            ( SELECT competence_id FROM role_competence WHERE role_id = #{id} ) AS t1
+            LEFT JOIN competence AS t2 ON t1.competence_id = t2.id
+    </select>
+
+</mapper>

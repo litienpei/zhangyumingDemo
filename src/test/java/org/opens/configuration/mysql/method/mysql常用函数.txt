@@ -1,0 +1,249 @@
+一.日常使用函数说明
+    1.1 DATE_ADD()函数
+        -功能
+            给"基础日期"偏移一定时间.
+        -语法
+            DATE_ADD(date,INTERVAL expr type)
+            --参数
+                date 参数是合法的日期表达式。
+                expr 参数是您希望添加的时间间隔。(取值一般为整数)
+                Type 值可以是以下的值
+                    MICROSECOND
+                    SECOND
+                    MINUTE
+                    HOUR                小时
+                    DAY                 天
+                    WEEK                周
+                    MONTH               月
+                    QUARTER
+                    YEAR                年
+                    SECOND_MICROSECOND
+                    MINUTE_MICROSECOND
+                    MINUTE_SECOND
+                    HOUR_MICROSECOND
+                    HOUR_SECOND
+                    HOUR_MINUTE
+                    DAY_MICROSECOND
+                    DAY_SECOND
+                    DAY_MINUTE
+                    DAY_HOUR
+                    YEAR_MONTH
+        -实例
+            --实例1
+                指令: select date_add( '2019-08-29', INTERVAL 1 DAY )
+                说明: 就是给2019-08-29这天再加1天
+                输出: 2019-08-30
+        -引申
+            --expr参数可以为负数
+                指令: select date_add(date_add( '2019-07-01', INTERVAL 1 MONTH ), INTERVAL -1 day)
+                说明: 函数中数字为负数表示减, 这样就能产生一个范围的时间.
+                输出: 2019-07-31
+                ---该功能可以用函数进行替换
+                    ----语法
+                        DATE_SUB(date,INTERVAL expr type)
+                    ----功能
+                        进行日期减少的操作，可以精确到秒
+                    ----实例
+                        +实例1
+                            指令: select date_sub(date_add( '2019-07-01', INTERVAL 1 MONTH ), INTERVAL 1 day)
+                            输出: 2019-07-31
+                            说明: 这条sql中的expr参数为正数, 实现了date_add函数中expr参数为负数的功能.
+    1.2 count()函数的说明
+        -表结构
+            CREATE TABLE `shiyan`.`products2`  (
+              `id` int(11) NOT NULL,
+              `name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+              `price` int(11) NULL DEFAULT NULL,
+              PRIMARY KEY (`id`) USING BTREE
+            ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+        -数据
+            1	苹果	 50
+            2	橘子	 100
+            5	香蕉	 80
+            7	芒果	 70
+            9	猪肉	 25
+        -count函数使用条件统计
+            指令: select count(id), count(id < 6 or null) from products2
+            输出: 5	3
+            说明: 只统计满足id < 6条件的行, 反之置为null跳过统计该行.
+        -引申
+            --count函数只能扫描非null列
+            --实例
+                ---表数据
+                    1	苹果	    50
+                    2	橘子	    100
+                    5	香蕉	    80
+                    7	芒果	    70
+                    9	猪肉	    25
+                    10	null	66
+                ---sql
+                    指令: select count(*), count(name) from products2
+                    输出: 6	5
+                    说明: 可以发现, 使用name统计行数会跳过为null的列, 所以在统计数据时, 如果要统计所有数据(忽略null), 请
+                         使用非null列进行扫描, 而利用这个特性, 可以使count进行条件扫描(参考1.2章节).
+    1.3 DATE_FORMAT()函数
+        -功能
+            用来格式化日期, 参考java中的SimpleDateFormat类.
+        -语法
+            DATE_FORMAT(date,format)
+            --参数
+                date 参数是合法的日期。
+                format 规定日期/时间的输出格式, 可能取值如下:
+                    %a	缩写星期名
+                    %b	缩写月名
+                    %c	月，数值
+                    %D	带有英文前缀的月中的天
+                    %d	月的天，数值(00-31)
+                    %e	月的天，数值(0-31)
+                    %f	微秒
+                    %H	小时 (00-23)
+                    %h	小时 (01-12)
+                    %I	小时 (01-12)
+                    %i	分钟，数值(00-59)
+                    %j	年的天 (001-366)
+                    %k	小时 (0-23)
+                    %l	小时 (1-12)
+                    %M	月名
+                    %m	月，数值(00-12)
+                    %p	AM 或 PM
+                    %r	时间，12-小时（hh:mm:ss AM 或 PM）
+                    %S	秒(00-59)
+                    %s	秒(00-59)
+                    %T	时间, 24-小时 (hh:mm:ss)
+                    %U	周 (00-53) 星期日是一周的第一天
+                    %u	周 (00-53) 星期一是一周的第一天
+                    %V	周 (01-53) 星期日是一周的第一天，与 %X 使用
+                    %v	周 (01-53) 星期一是一周的第一天，与 %x 使用
+                    %W	星期名
+                    %w	周的天 （0=星期日, 6=星期六）
+                    %X	年，其中的星期日是周的第一天，4 位，与 %V 使用
+                    %x	年，其中的星期一是周的第一天，4 位，与 %v 使用
+                    %Y	年，4 位
+                    %y	年，2 位
+            --实例
+                ---实例1
+                    指令: select DATE_FORMAT( '2019-03-26 22:53:41', '%Y-%m-%d' )
+                    输出: 2019-03-26
+                    说明: 相当于使格式化时间, 可以是只获取部分.
+                ---实例2
+                    指令: select DATE_FORMAT( '2019-03-26 22:53:41', '%H' )
+                    输出: 22
+                    说明: 功能是只获取指定时间的小时时间.
+    1.4 CONVERT()函数
+        -功能
+            将参数转换为指定的格式
+        -语法
+            CONVERT(value, type)
+            --参数:
+                value : 要转换的值;
+                type : 要转换的类型;
+        -实例
+            --实例1
+                指令: select 7 / 7
+                输出: 1.0000
+                说明: 查看默认输出格式.
+            --实例2
+                指令: select CONVERT(7 / 7 * 100, SIGNED)
+                输出: 100
+                说明: 将一个数格式化为整数.
+            --实例3
+                指令: select CONVERT(7 / 7 * 100, DECIMAL ( 5, 2 ))
+                输出: 100.00
+                说明: 将一个数格式化为固定格式的小树
+                ---DECIMAL ( 5, 2 )关键字说明
+                    ----注意
+                        DECIMAL是一个关键字, 并非是一个函数, 它就像int类型一样是一个类型.
+                    ----说明
+                        DECIMAL ( 5, 2 )表示这个数字占5位, 小数部分占2位(小数点不占位).
+                    ----实例
+                        +实例1
+                            指令: select CONVERT(7 / 7 * 100, DECIMAL ( 5, 4 ))
+                            输出: 9.9999
+                            说明: 之所以变成这个结果是因为7 / 7 * 100的结果是100, 但是DECIMAL ( 5, 4 )小数占了4位, 整数
+                                 只占1位, 不够显示, mysql会自动调整为一个最接近的数来容错, 但是要尽量避免这种情况.
+                        +实例2
+                            指令: select CONVERT(7 / 7 * 100, DECIMAL ( 8, 5 ))
+                            输出: 100.00000
+                            说明: 共占8位, 小数部分占5位, 整数占3位.
+    1.5 concat()函数
+        -功能
+            拼接字符串.
+        -语法
+            CONCAT(str1,str2,...)
+            --参数
+                参数都是要拼接的字符串/数字/时间.
+        -实例
+            --实例1
+                指令: select CONCAT('zhang', 'yu', 'ming')
+                输出: zhangyuming
+            --实例2
+                指令: select CONCAT('zhang', 'yu', 'ming', null)
+                输出: null
+            --实例3
+                指令: select concat('zhang', 1)
+                输出: zhang1
+                说明: concat会自动把数字转换为对应的字符串, 这个例子中的转换: 1 → '1'.
+            --实例4
+                指令: select concat('zhang', NOW())
+                输出: zhang2019-08-30 17:30:27
+                说明: 也可以用来连接字符串和时间, 但是一般程序中不会这么做, 这么做没有意义.
+            --总结
+                1. 返回来自于参数连结的字符串。
+                2. 如果任何参数是NULL，返回NULL。
+                3. 可以有超过2个的参数。
+                4. 一个数字参数被变换为等价的字符串形式。
+    1.6 trim函数
+        -功能
+            去除指定字符串左右两侧的空格, 功能和java中String类的trim()函数功能相同.
+        -语法
+            TRIM(str)
+            --参数
+                str : 待处理的字符串.
+        -实例
+            --实例1
+                指令: select LENGTH(TRIM('  s d s ')), LENGTH('  s d s ')
+                输出: 5	8
+                说明: 去掉了左右两侧共3个空格.
+    1.7 DAYOFWEEK函数
+        -功能
+            返回指定日期的星期数.
+        -语法
+            DAYOFWEEK(date)
+            --参数
+                date : 带转换的日期.
+        -实例
+            -实例1
+                指令: select DAYOFWEEK('1998-02-03'), DAYOFWEEK(now())
+                输出: 3	6
+                说明: 返回日期date的星期索引(1=星期天，2=星期一, …7=星期六), 返回的星期比实际小1.
+        -引申
+            还有以下函数, 基本同理:
+            WEEKDAY(date)           返回date的星期索引(0=星期一，1=星期二, ……6= 星期天)
+            DAYOFMONTH(date)        返回date的月份中的日期，在1到31范围内。
+            DAYOFYEAR(date)         返回date在一年中的日数, 在1到366范围内。
+            MONTH(date)             返回date的月份，范围1到12。
+            DAYNAME(date)           返回date的星期名字。
+            MONTHNAME(date)         返回date的月份名字。
+            QUARTER(date)           返回date一年中的季度，范围1到4。
+            YEAR(date)              返回date的年份，范围在1000到9999。
+            HOUR(time/date)         返回time的小时，范围是0到23。
+            MINUTE(time/date)       返回time的分钟，范围是0到59。
+            SECOND(time/date)       回来time的秒数，范围是0到59。
+
+    1.8 获取当前时间的全家桶
+        -语法
+            NOW()       获取当前完整时间
+            CURDATE()   获取当前时间的日期部分
+            CURTIME()   获取当前时间的时分秒部分
+        -实例
+            --实例1
+                指令: select NOW()
+                输出: 2019-08-30 17:58:02
+            --实例1
+                指令: select CURDATE()
+                输出: 2019-08-30
+            --实例1
+                指令: select CURTIME()
+                输出: 17:55:08
+
+

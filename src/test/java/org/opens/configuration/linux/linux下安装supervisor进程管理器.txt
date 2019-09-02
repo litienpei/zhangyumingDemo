@@ -1,0 +1,169 @@
+一.使用场景
+    1.1 场景1介绍
+        -简介
+            使用supervisor这个进程管理工具去管理我们的项目之后, 可以很方便的监听、启动、停止、重启一个或多个进程;
+            用supervisor管理的进程，当一个进程意外被杀死，supervisor监听到进程死后，会自动将它重启，很方便的做到
+            进程自动恢复的功能，不再需要自己写shell脚本来控制。
+        -注意
+            supervisor是用Python开发的一个client/server服务, 所以安装它之前需要先安装python, 并且安装python2,
+            supervisor不支持python3.
+二.supervisor的安装和使用
+    2.1 安装python
+        -安装准备
+            前要先装好gcc、 g++、和zlib相关的依赖库
+            命令: yum install gcc g++ zlib zlib-devel openssl-devel
+        -下载python, setup-tools, pip
+            wget https://files.pythonhosted.org/packages/68/0c/e470db6866aedbff3c4c88faf7f81b90343d8ff32cd68b62db1b65037fb4/setuptools-41.1.0.zip
+            wget https://files.pythonhosted.org/packages/aa/1a/62fb0b95b1572c76dbc3cc31124a8b6866cbe9139eb7659ac7349457cf7c/pip-19.2.2.tar.gz
+            wget https://www.python.org/ftp/python/2.7.5/Python-2.7.5.tgz
+        -安装python主程序
+            1. 新建python主程序目录
+                mkdir /usr/local/python2
+            2. 将解压包移动到第一步中创建的目录下并解压下载的安装包
+                命令: mv 压缩包 /usr/local/python2
+                     tar -zxf Python-2.7.5.tgz
+            3. 进入解压目录并执行默认参数配置, 然后编译安装
+                命令: cd Python-2.7.5
+                     ./configure --prefix=/usr/local/python2.5 --with-threads --enable-shared
+                     make && make altinstall
+            4. 创建软连接模拟环境变量
+                命令: ln -s /usr/local/python2/bin/python2.7 /usr/bin/python2
+                     ln -s /usr/local/python2/bin/pip2.7 /usr/bin/pip2
+            5. 命令行输入python检测是否安装成功, 出现>>> 命令提示符就表示安装成功了.
+        -安装setuptools
+            1. 下载好setuptools后, 解压
+                命令: unzip setuptools-41.1.0.zip
+            2. 进入解压目录执行安装命令
+                命令: cd setuptools-41.1.0
+                     python setup.py install
+        -安装pip
+            1. 下载好pip后, 解压
+                命令: tar -zxvf pip-9.0.1.tar.gz
+            2. 进入解压目录执行安装命令
+                命令: cd pip-9.0.1
+                     python setup.py install
+    2.2 安装supervisor
+        -简介
+            之所以在2.1中多做那么多事情是为了使用pip安装supervisor, 更便捷.
+        -安装supervisor
+            命令: pip instal supervisor
+            注意: 成功就安装完毕了.
+    2.3 配置supervisor
+        -简介
+            supervisor的配置文件分为2种:
+                1. 启动配置文件;
+                2. 服务管理配置文件;
+            启动配置文件中配置了一些supervisor的属性, 例如:
+                1. 给supervisor配置"服务管理配置文件"的目录;
+                2. 配置supervisor使用的端口和ip;
+        -使用指令创建启动配置文件并修改
+            --简介
+                supervisor的启动配置文件是通过命令来创建的.
+            --创建启动配置文件
+                命令: echo_supervisord_conf > /etc/supervisord.conf
+                结果: 执行这条指令之后就会在/etc目录下生成supervisord.conf启动配置文件.
+            --修改启动配置文件
+                ---简介
+                    该配置文件使用";"作为注释, 修改该配置文件只需要去掉两个部分的注释.
+                ---修改内容为
+                    ...
+                    [inet_http_server]
+                    port=127.0.0.1:9001
+                    username=user
+                    password=123
+                    ...
+                    [include]
+                    files=/etc/supervisord/*.conf    ;这个目录就是指定服务管理配置文件的存放文件夹
+                    ...
+                ---创建服务管理配置文件夹
+                    命令: mkdir /etc/supervisord
+                ---提示
+                    在vi中的搜索: 在命令模式输入: /要搜索的内容 回车就可以.
+             --启动supervisor
+                命令: supervisord -c /etc/supervisord.conf  #-c指定了读取那个启动配置文件
+    2.4 配置服务管理配置文件
+        -简介
+            这个文件的作用就是将app的路径和启动app的命令都配置在里面, supervisor会读取这各个服务管理文件中的参数进行管理.
+        -配置一个服务被supervisor管理
+            1. 进入启动配置文件中配置的路径(files=/etc/supervisord/*.conf), 然后用vi创建服务管理配置文件, 这个文件不
+            能通过命令创建.
+                命令: vi projectName.conf
+                注意:
+                     文件名无所谓, 但是后缀必须是.conf, 否则正则匹配原则无法匹配, supervisor管理应用是根据服务管理配置
+                     文件中配置的服务名称进行管理的, 不是根据这个文件的名称管理, 这个名称的作用就是提醒一下开发者这个文件
+                     是配置给那个app的.
+            2. 粘贴以下内容 -> 保存并退出
+                [program:api]
+                user=root
+                directory= /root/zhangym_application
+                command= java -Xms1g -Xmx1g -jar call_service-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev >springboot.log
+                autostart=true
+                autorestart=true
+                startsecs=5
+                priority=1
+                loglevel=debug
+                log_stderr=true
+                stdout_logfile=/var/log/api2.log
+                redirect_stderr=true
+            3. 进入supervisor查看被管理的进程
+                -命令(进入supervisor的交互终端)
+                    supervisorctl
+                -结果
+                    在进入这个管理工具后, 会发现并没有刚刚配置的服务, 原因是新增的服务管理配置文件并不会被立即扫描, 需要
+                    让supervisor重新扫描服务管理配置文件.
+                    ---命令(使supervisor重新读取服务管理配置文件)
+                        update
+                    ---命令(查看supervisor管理的进程)
+                        status
+
+三.supervisor的常用指令说明
+    3.1 说明(api假定是这个进程的名称, 在服务管理配置文件中配置[program:api])
+        -命令: update
+         说明: supervisor会重新读取服务管理配置文件, 改变了服务管理配置文件的服务必须执行这条指令才会生效.
+
+        -命令: stop api
+         说明: 表示停止名称为api的进程;
+
+        -命令: status api
+         说明: 表示查看名称为api的进程的信息;
+
+        -命令: start api
+         说明: 表示使名称为api的进程启动.
+
+        -命令: tail -f api
+         说明: 表示查看api的日志.
+         备注: 日志系统使用ctrl + c进行退出.
+四.supervisor服务管理配置文件详解
+    4.1 说明
+        [program:theprogramname]      ; 配置服务名称
+        command=/bin/cat              ; 程序运行命令，建议使用绝对路径。
+        process_name=%(program_name)s ; 程序名称，可用的变量有 `group_name`, `host_node_name`, `process_num`, `program_name`, `here`（配置文件目录）。 一般程序需要运行多个副本的情况会使用。后面会有例子。
+        numprocs=1                    ; 程序运行的副本个数，默认为1，如果值大于1，则`process_name` 必须包含 `%(process_num)s`
+        numprocs_start=0              ; `%(process_num)s`起始数字，默认为0
+        00=/tmp                       ; 程序运行的所在目录，相当于先cd到指定目录，然后运行程序。
+        umask=022                     ; umask for process (default None)
+        priority=999                  ; 程序操作的的优先级，例如在start all/stop all,高优先级的程序会先关闭和重启。
+        autostart=true                ; 在supervisord启动时自动启动，默认为true
+        startsecs=1                   ; 程序启动前等待时间等待时间。默认为1。
+        startretries=3                ; 尝试重启最大次数。默认为3。
+        autorestart=unexpected        ; 是否自动重启，可选参数为 false, unexpected, true。如果为false则不自动重启，如果为unexpected表示如果程序退出信号不在 `exitcodes` 中，则自动重启。默认为unexpected
+        exitcodes=0,2                 ; 程序退出码。配合`autorestart`使用。默认为 0,2
+        stopsignal=QUIT               ; 杀死进程是发送的信号，默认为TREM。
+        stopwaitsecs=10               ; 发送SIGKILL信号前最大等待时间。默认为10。
+        user                          ; 以指定用户身份启动程序。默认为当前用户。
+        stopasgroup=false             ; 是否向子进程发送停止信号，这对于Flask的debug模式很有用处，如果设置为true，则不向子进程发送停止信号。默认为false
+        killasgroup=false             ; 是否向子进程发送kill信号，默认为false
+        redirect_stderr=false         ; 将错误输出定向到标准输出，默认为false
+        stdout_logfile=/a/path        ; 标准输出日志路径，可选参数为 `自定义` `AUTO` `NONE`，`自定义`将日志写到自定义路径，可用的变量有`group_name`, `host_node_name`, `process_num`, `program_name`, `here`（配置文件目录）；`NONE`不创建日志；`AUTO` 又supervisord自动选择路径，并且当supervisord服务重新启动时原来自动创建的日志以及日志的备份文件会被删除。默认为AUTO
+        stdout_logfile_maxbytes=1MB   ; 标准输出日志单个文件最大大小，如果超过指定大小会将日志文件备份，可用的单位 KB MB GB。如果设置为0则表示不限制文件大小。默认为50MB
+        stdout_logfile_backups=10     ; 标准输出日志文件最大备份数。默认为10
+        stdout_capture_maxbytes=1MB   ; 当进程处于“stdout capture mode”模式下写入到FIFO队列最大字节数，可用单位 KB MB GB。默认为0，详细说明见[capture-mode](http://supervisord.org/logging.html#capture-mode)
+        stdout_events_enabled=false   ;
+                                      ;以下配置项配置错误输出的日志参数。和上面标准输出配置相同。
+        stderr_logfile=/a/path        ;
+        stderr_logfile_maxbytes=1MB   ;
+        stderr_logfile_backups=10     ;
+        stderr_capture_maxbytes=1MB   ;
+        stderr_events_enabled=false   ;
+        environment=A="1",B="2"       ; 环境变量设置，可用的变量有 `group_name`, `host_node_name`, `process_num`, `program_name`, `here`。 默认为空。
+        serverurl=AUTO                ; override serverurl computation (childutils)

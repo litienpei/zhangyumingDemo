@@ -1,0 +1,31 @@
+一. linux常用
+    1.1 网卡操作
+        -重启网卡
+            service network restart
+二. spring boot的jar包在linux下的部署
+	2.1 查看java进程
+		-命令
+			ps -ef | grep java
+		-说明
+			这条命令可以查询到进程的pid号码
+	2.2 kill进程
+		-命令
+			kill -9 进程pid
+		-说明
+			根据2.1中查到进程的pid号码进行终止进程操作
+	2.3 启动jar包
+		-命令
+			例1: nohup java -jar ekefu-1.0.0.jar --spring.profiles.active=sz >springboot.log 2>&1 &
+			例2: nohup java -jar call_service-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev >springboot.log 2>&1 &
+		-注意
+			这条指令表示将日志输出到同级目录下的springboot.log文件
+		-java命令的可选参数
+		    --参数详解
+		        1. -Xmx1g :
+		            设置JVM最大可用内存为1g。
+                2. -Xms1g :
+                    设置JVM促使内存为1g。此值可以设置与-Xmx相同，以避免每次垃圾回收完成后JVM重新分配内存。
+            --指定可用内存形式启动jar文件指令
+                nohup java -Xmx1g -Xms1g ekefu-1.0.0.jar --spring.profiles.active=sz >springboot.log 2>&1 &
+                ---说明
+                    这条指令的含义就是为这个服务分配1g的内存.

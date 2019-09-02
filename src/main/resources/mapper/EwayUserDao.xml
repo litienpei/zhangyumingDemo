@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.opens.shiro.dao.EwayUserDao">
+    <resultMap id="BaseResultMap" type="org.opens.shiro.pojo.EwayUser">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="account_number" jdbcType="VARCHAR" property="accountNumber"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <collection property="list" ofType="org.opens.shiro.pojo.Role">
+            <id column="role_id" jdbcType="INTEGER" property="id"/>
+            <result column="role_name" jdbcType="VARCHAR" property="name"/>
+        </collection>
+    </resultMap>
+
+    <!-- xml中需要注意大于等于号等特殊符号,需要进行转义 -->
+
+    <select id="getUserAndRolesById" resultMap="BaseResultMap">
+        SELECT
+            t1.id,
+            t1.account_number,
+            t1.NAME,
+            t1.PASSWORD,
+            t3.id AS role_id,
+            t3.NAME AS role_name
+        FROM
+            ( SELECT id, account_number, NAME, PASSWORD FROM eway_user WHERE id = #{id} ) AS t1
+            LEFT JOIN eway_user_role AS t2 ON t1.id = t2.eway_user_id
+            LEFT JOIN role AS t3 ON t2.role_id = t3.id
+    </select>
+
+    <select id="getUsersByAccount" resultMap="BaseResultMap">
+        SELECT
+            t1.id,
+            t1.account_number,
+            t1.NAME,
+            t1.PASSWORD,
+            t3.id AS role_id,
+            t3.NAME AS role_name
+        FROM
+            ( SELECT id, account_number, NAME, PASSWORD FROM eway_user WHERE account_number = #{account_number} ) AS t1
+            LEFT JOIN eway_user_role AS t2 ON t1.id = t2.eway_user_id
+            LEFT JOIN role AS t3 ON t2.role_id = t3.id
+    </select>
+
+    <select id="getRolesNameByAccount" resultType="String">
+        SELECT
+            t3.NAME AS role_name
+        FROM
+            ( SELECT id, account_number, NAME, PASSWORD FROM eway_user WHERE account_number = #{account_number} ) AS t1
+            LEFT JOIN eway_user_role AS t2 ON t1.id = t2.eway_user_id
+            LEFT JOIN role AS t3 ON t2.role_id = t3.id
+    </select>
+
+    <select id="getPermissionBasedOnRoleId" resultType="String">
+
+    </select>
+
+</mapper>

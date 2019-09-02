@@ -1,0 +1,45 @@
+一. jpa注解说明
+    1.1 实体类Entity的说明
+        -@Entity
+            --说明
+                任何 hibernte 映射对象都要有这个注释
+        -@Table(name = "")
+            --功能
+                就是指定这个类对应的表名称
+            --注意
+                @Table(name="T_X")这句话可以不写，不写就以类名作为表名
+        -@SuppressWarnings("serial")
+
+        -@Column(name = “Name”,nullable=false,length=32)
+            --功能
+                声明该字段和那个表对应, nullable表示是否可以为null, length表示长度
+        -@Id
+            --功能
+                声明属性为主键
+
+        -@Temporal(TemporalType.TIMESTAMP)
+
+        -@Transient
+            --功能
+                表示此属性与表没有映射关系，是一个暂时的属性
+
+        -@OneToMany(mappedBy=”order”,cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+            --功能
+                一对多声明，和 ORM 产品声明类似，一看就明白了
+         @OrderBy(value = “id ASC”)
+            --功能
+                根据该字段排序
+        -@Temporal(value=TemporalType.DATE)
+            --功能
+                做日期类型转换。
+        -@OneToOne(optional= true,cascade = CascadeType.ALL, mappedBy = “person”)
+            --功能
+                一对一关联声明
+二.JPA 与 hibernate关系
+	-简介
+		1. JPA(Java Persistence API)是Sun官方提出的Java持久化规范。它为Java开发人员提供了一种对象/关系映射工具来管理Java应用中的关系数据。
+		而Hibernate是它的一种实现。除了Hibernate，还有EclipseLink(曾经的toplink)，OpenJPA等可供选择，所以使用Jpa的一个好处是，可以更换实
+		现而不必改动太多代码。
+
+		2. Hibernate作为JPA的一种实现,jpa的注解已经是hibernate的核心，hibernate只提供了一些补充，而不是两套注解。hibernate对jpa的支持够足
+		量，在使用hibernate注解建议使用jpa。

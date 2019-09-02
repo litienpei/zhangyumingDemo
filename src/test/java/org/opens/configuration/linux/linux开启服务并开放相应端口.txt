@@ -1,0 +1,19 @@
+一. 在linux下启动一个服务
+    1.1 启动spring boot的jar应用
+        参考: linux部署jar应用.txt
+    1.2 启动python的应用
+        参考: linux启动python应用
+    1.3 开启服务相应的端口
+        -简介
+            1. centos7 默认是FirewallD 提供支持网络/防火墙区域(zone)定义网络链接以及接口安全等级的动态防火墙管理工具.
+            2. 以前开启centos7 的防火墙时,网上好多教程都是先关闭firewall,然后安装iptables-services ,真不改这么做,
+                因为iptables-services 是centos6的防火墙,
+                而7默认为firewall了,直接配置firewall就可以了.
+        -FirewallD开启80端口操作如下:
+            --指令:
+                #开启80端口, 出现success表明添加成功
+                firewall-cmd –zone=public –add-port=80/tcp –permanent
+            --参数含义:
+                zone                ->      作用域
+                add-port=80/tcp     ->      添加端口,格式为:端口/通讯协议
+                permanent           ->      永久生效,没有此参数重启后失效

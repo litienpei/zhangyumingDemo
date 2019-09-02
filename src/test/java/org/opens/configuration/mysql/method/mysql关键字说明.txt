@@ -1,0 +1,20 @@
+一.mysql的关键字简介
+    1.1 between关键字简介
+        -功能
+            比较一个数是否在一个范围之内.
+        -语法
+            value1 between value2 and value3
+            --说明
+                判断value1是否在value2~value3范围之内, 相当于使判断if(value1 >= value2 && value1 <= value3)
+        -实例
+            --实例1
+                指令: select 3.9 BETWEEN 4 and 7
+                输出: 0
+            --实例2
+                指令: select 4   BETWEEN 4 and 7
+                输出: 1
+            --实例3
+                指令: select 7   BETWEEN 4 and 7
+                输出: 1
+            --总结
+                ...between...and... 关键字比较包含左右值.

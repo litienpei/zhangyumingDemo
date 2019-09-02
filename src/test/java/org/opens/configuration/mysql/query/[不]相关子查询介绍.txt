@@ -1,0 +1,148 @@
+一.场景
+    1.1 简介
+        在使用mybatis操作mysql的时候, 有些业务会用到子查询, 而子查询根据其特性分为2类;
+        一类是: 相关子查询; 即内层查询引用了外部查询的值;
+        另一类是: 不相关子查询; 就是内层查询没有使用外层查询的值;
+        这两者的区别就是看内层查询是否有引用外层查询中的值.
+    1.2 子查询的内外层
+        select ... (        #括号外面的是外层查询
+            select ...      #括号里面的是内层查询
+        )
+二.详细
+    2.1 相关/不相关子查询的执行流程
+        -相关子查询
+            内部查询的执行依赖于外部查询的数据，外部查询每执行一次，内部查询也会执行一次。每一次都是外部查询先执行，取出
+            外部查询表中的一个元组，将当前元组中的数据传递给内部查询，然后执行内部查询。根据内部查询执行的结果，判断当前
+            元组是否满足外部查询中的where条件，若满足则当前元组是符合要求的记录，否则不符合要求。然后，外部查询继续取出
+            下一个元组数据，执行上述的操作，直到全部元组均被处理完毕.
+        -不相关子查询
+            内部查询的执行独立于外部查询，内部查询仅执行一次，执行完毕后将结果作为外部查询的条件使用.
+        -总结
+            相关子查询的执行流程看起来不太好理解, 其中有说"外部查询每执行一次，内部查询也会执行一次"可以这样理解->"外层
+            先执行, 逐行扫描, 然后将对应的值传递给内层, 然后内层再进行内层表的全表扫描然后与外层传进来的值进行where条
+            件匹配, 最后内层查询将最终运算结果集返回给外层, 外层where判断之后决定是否保留当前数据".
+
+            实例在2.2章节中介绍.
+    2.2 相关子查询的执行实例
+        -表结构
+            CREATE TABLE `shiyan`.`products2`  (
+              `id` int(11) NOT NULL,
+              `name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+              `price` int(11) NULL DEFAULT NULL,
+              PRIMARY KEY (`id`) USING BTREE
+            ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+        -数据
+            1	苹果	 50
+            2	橘子	 100
+            3	橘子	 100
+            4	橘子	 100
+            5	香蕉	 80
+            6	苹果	 50
+            7	芒果	 70
+            8	芒果	 70
+            9	猪肉	 25
+        -相关子查询sql
+            select * from products2 as t1 where t1.id =
+            (
+            SELECT max(t2.id) from products2 as t2 where t1.name = t2.name and t1.price = t2.price
+            )
+            --执行过程分析
+                1. 与不相关子查询的扫描顺序不同, 相关子查询从外层查起, 首先, mysql扫描到products2表的第一条数据:
+                    -> 1	苹果	 50
+                       2	橘子	 100
+                       3	橘子	 100
+                       ...
+                2. 将内层查询使用到外层查询的值传递到内层, 所以此时的内层可以当做独立的sql执行:
+                    SELECT max(t2.id) from products2 as t2 where t1.name = t2.name and t1.price = t2.price
+                    ↓(值替换)
+                    SELECT max(t2.id) from products2 as t2 where '苹果' = t2.name and 50 = t2.price
+                    ↓(返回内层查询结果集)
+                    6
+                    ↓(执行外层sql, 由于内层查询已经返回了值, 所以此时外层查询可以当做单独的sql执行)
+                    select * from products2 as t1 where t1.id = 6
+                    ↓
+                    6	苹果	  50
+                    ↓(外层查询扫描下一行, 重复1, 2 步)
+                       1	苹果	  50
+                    -> 2	橘子	  100
+                       3	橘子	  100
+                3. 最终结束条件
+                    当外层查询扫描至最后一层时:
+                           7	芒果	  70
+                           8	芒果	  70
+                        -> 9	猪肉	  25
+                    然后执行完1, 2部之后整个sql查询就结束了.
+            --引申
+                上面例中的sql看起来并没有什么作用, 但是实际上却使用原生sql实现了group by的功能.
+                ---使用group by实现上面的功能
+                    select * from products2 as t1 where t1.id in
+                    (
+                    select max(id) as ma from products2 group by name, price
+                    )
+                    ----输出
+                        4	橘子	  100
+                        5	香蕉	  80
+                        6	苹果	  50
+                        8	芒果	  70
+                        9	猪肉	  25
+                    ----引申
+                        1. 更换max(id)->min(id)即可输出取得同类id最小的行;
+                        2. group by和相关子查询的效率谁高不清楚.
+        -这条sql的功能
+            可以用这条sql实现去重功能, 选择性保存id最小行或者id最大行, 而删除其他的.
+            --会报错的sql
+                DELETE
+                FROM
+                	products2
+                WHERE
+                	id NOT IN (
+                		SELECT
+                			t1.id
+                		FROM
+                			products2 AS t1
+                		WHERE
+                			t1.id = (
+                			SELECT
+                				min( t2.id )
+                			FROM
+                				products2 AS t2
+                			WHERE
+                				t1.NAME = t2.NAME
+                				AND t1.price = t2.price
+                			)
+                	)
+                ---报错内容
+                    > 1093 - You can't specify target table 'products2' for update in FROM clause
+                    中文: 不能在FROM子句中update指定目标表'products2'.
+                    ----解决办法
+                    解决的办法在下面"正确的sql"章节中, 之所以报错是因为后面查询出的结果是一个临时表(没有起别称), 所以mysql
+                    不允许删除, 如果要删除, 则需要再套一层外层查询, 但是这样会导致性能问题, 只适用于小数据量.
+
+            --正确的sql
+                DELETE
+                FROM
+                	products2
+                WHERE
+                	id NOT IN (
+                	SELECT
+                		t5.id
+                	FROM
+                		(
+                		SELECT
+                			t1.id
+                		FROM
+                			products2 AS t1
+                		WHERE
+                			t1.id = (
+                			SELECT
+                				min( t2.id )
+                			FROM
+                				products2 AS t2
+                			WHERE
+                				t1.NAME = t2.NAME
+                				AND t1.price = t2.price
+                			)
+                		) AS t5
+                	)
+                ---说明
+                    套了一层子查询就可以删除了, 但是会带来大数据量性能问题.

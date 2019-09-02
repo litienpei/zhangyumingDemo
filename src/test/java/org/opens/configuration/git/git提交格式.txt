@@ -1,0 +1,16 @@
+一.场景
+    1.1 简介
+        良好的提交规则能保证提交可辨识度提高.
+二.详细
+    2.1 实例
+        -简介
+            推送时, 推送信息的书写格式:
+                update/insert/delete/fixBug(修改的框架的标题, 例如mybatis, jpa等): 本次推送行为简介.
+        -例子1(进行一次提交新代码内容 新增的类型是给mybatis的mapper文件新增一个方法)
+            --提交信息格式
+                insert(mybatis): 新增业务逻辑代码xxx.
+        -例子2
+            --修复bug
+                修复mybatis的一个mapper文件中一个方法的sql
+            --提交信息普通格式为:
+                fixBug(mybatis): 修复bugxxx.

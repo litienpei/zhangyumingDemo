@@ -1,0 +1,140 @@
+一.场景
+    1.1 简介
+        在日常使用git时会经常碰到操作成功了, 但是仍旧提心吊胆的害怕自己的操作会使仓库上的代码收到破坏, 所以搞清楚git的一些
+        常用指令的概念和原理是很有必要的, 以到达"你好我也好"的目标.
+二.详细
+    2.1 git bash的提示信息意义
+        -提示信息
+            张玉明@LAPTOP-09O7TLOV MINGW64 ~/Desktop/git-demo/demo1
+            --意义说明
+                张玉明						用户名
+                LAPTOP-09O7TLOV				计算机名称
+                MINGW64						暂不清楚
+                ~/Desktop/git-demo/demo1	当前所在路径
+    2.2 git常用名词概念
+        -working tree
+        	就是指当前git管理的文件夹, 因为这个文件夹是一个树状结构, 所以git称它为working tree.
+        -index(又称: stage, cache)[我喜欢叫cache]
+        	相当于working tree中的文件到达repository中的一个中转站.
+        	--引申
+        		---文件从working tree -> cache的指令
+        			指令: git add...
+        			说明: 如题, 就是将working tree中的文件加入缓存中.
+        		---文件从cache -> repository的指令
+        			指令: git commit...
+        			说明: 如题, 就是将文件从cache中移动到repository中.
+        -repository
+        	git文档仓库, 也就是执行git init指令后创建的.git目录.
+    2.3 常用指令简介(git add..., git commit..., git config..., git init, git status, gitk)
+        -cd指令
+        	-cd指令注意事项
+        		如果cd的路径中包含空格, 需要以单引号括起来.
+        	-实例(例如要cd进一个名称为"git demo"的文件夹)
+        		指令: cd 'git demo'
+        -git init
+        	--功能
+        		创建版本库repository.
+        	--说明
+        		就是在当前文件下创建本地仓库.git目录, 这个目录下的文件就是使用一种算法来保存我们的文件的版本库.
+        	--实例
+        		指令: $ git init
+        		输出: Initialized empty Git repository in C:/Users/张玉明/Desktop/git-demo/demo1/.git/
+        		说明: 可以发现, git在当前路径下创建了一个名为.git的目录.
+        		注意: .git文件夹默认是隐藏的, windows下需要设置查看隐藏文件, linux下"ls -a".
+        -git add指令
+        	--语法
+        		git add 文件名
+        	--说明
+        		就是将指定的文件加入到git的cache中.
+        	--引申
+        		如果你有安装gitlab这个软件, 就会发现, 没有加入cache的文件时没有下角标的, 而执行这个命令之后, 文件图标上就会出现一个加号, 表示这个文件已经加入cache了.
+        		---一次将多个文件添加进缓存
+        			----方式1
+        				指令: git add 文件1 文件2 文件3 ...
+        				说明: 以空格隔开多个文件.
+        			----方式2
+        				指令: git add *
+        				说明: 表示添加当前版本管理目录下的所有文件到缓存中.
+        			----方式3
+        				指令: git add .
+        				说明: 表示添加当前目录下的所有文件到缓存中.
+        			----引申
+        				批量提交需要配合.gitignore文件进行忽略添加, 因为有一些信息不用提交, 例如.idea这个目录就是用来存储idea的环境配置信息的, 不同的机器的信息不一致.
+        		---git add...加入缓存和git commit...提交的内容注意
+        			git add是将working tree中的文件加入到cache中, 而git commit是将cache中的内容加入到repository中, 所以在每次更新完文件之后, 都要先更新cache, 再提交, 否则未git add的内容不会提交到repository中.
+        	-注意
+        		此时的文件并没有进入文件库, 而是相当于加入了git的缓存中, 需要执行git commit ...操作才能使当前文件从缓存中进入仓库中被git管理员管理.(可以查看git status和git commit ...的输出进行总结)
+        -git status指令
+        	--语法
+        		git status
+        	--实例
+        		指令: git status
+        		输出:
+        			On branch master									#中文: 当前在主分支.
+        			No commits yet										#中文: 没有提交记录.
+        			Changes to be committed:							#中文: 选择的进行提交.
+        			  (use "git rm --cached <file>..." to unstage)		#中文: 使用"git rm --cached <file>..."指令来是缓存文件退出管理平台.
+        					new file:   poem.txt
+        		说明: 意思已经在注释中说明.
+
+        -git commit
+        	--功能
+        		将cache中的内容提交到repository中.
+        	--语法
+        		git commit -m '操作说明' --author='你的姓名<你的邮箱>'
+        	--实例
+        		指令: git commit -m 'insert(poem): 王维的诗.' --author='张玉明<991264921@qq.com>'
+        		输出:
+        			[master (root-commit) 632dfff] insert(poem): 王维的诗.		#提交的信息会显示在这里.
+        			 Author: 张玉明 <991264921@qq.com>							#作者信息.
+        			 1 file changed, 1 insertion(+)								#有一个文件被改动了, 增加了1行, +代表加入行, -代表删除行.
+        			 create mode 100644 poem.txt								#被改动的文件名.
+
+        -更改文件内容后再提交
+        	--指令
+        		git add 文件名
+        	--说明
+        		git是如何区分出你add的文件和缓存汇总的文件时同一个, 可能是和文件名有关系, 由于文件名在同一目录下有唯一性(不止这一个特性), 所以操作系统已经帮你做了这个, 可以暂时不考虑这个, 因为太高端了.
+        	--注意
+        		如果你有装gitlab, 会发现在每次更改文件之后, 文件图标的角标会变成感叹号表示这个文件发生了改动未加入repository.
+        	-引申
+        		--使用git status查看仓库此时的状态
+        			指令: git status
+        			输出:
+        				On branch master
+        				Changes not staged for commit:
+        				  (use "git add <file>..." to update what will be committed)					#中文: 使用git add...指令去更新将要提交的内容
+        				  (use "git checkout -- <file>..." to discard changes in working directory)		#中文: 使用git checkout...指令来放弃目录中的更改
+        						modified:   poem.txt													#表示该文件发生了变化.
+        				no changes added to commit (use "git add" and/or "git commit -a")				#中文: 提交时不添加任何更改.
+        			说明: 意思是, 你的版本控制系统发生了更改, 请先使用git add指令去文件中的内容添加到cache中.
+        		--使用git add测试添加更改
+        			指令: git add poem.txt
+        			---使用git status查看当前版本库的状态
+        				指令: git status
+        				输出:
+        					On branch master
+        					Changes to be committed:
+        					  (use "git reset HEAD <file>..." to unstage)
+
+        							modified:   poem.txt						#该文件发生了变化.
+        				说明: 说明此时的文件更改已经进入了cache.
+        		--使用git commit将缓存中的内容提交到repository中
+        			指令: git commit -m 'insert(poem): 新增加一测试.' --author='张玉明<991264921@qq.com>'
+        			输出:
+        				[master 60434ad] update(poem): 新增加一句诗.
+        				 Author: 张玉明 <991264921@qq.com>
+        				 1 file changed, 2 insertions(+), 1 deletion(-)			#表示增加了2行, 删除了1行.
+        			注意: 这个指令会统计受影响行数, 经反复测试后发现并没有和实际操作对上, 也可能是理解的方式有错误, 好像和windows的系统换行符有关系, 因为windows的换行符是/r/n, 		而linux是/n, 所以windows下统计最终都会多一行, 因为它将/r算作了一行, /n算作了一行, 这样就能对上了.
+        			---引申
+        				之所以发现这个是因为在测试时, 删除一个文件中2行, 它会返回如下信息:
+        					[master 2966d9d] insert(poem): 新增加一测试.
+        					 Author: 张玉明 <991264921@qq.com>
+        					 1 file changed, 1 insertion(+), 3 deletions(-)
+        				说明: 并没有新增, 而且删除多统计了一行, 就想到了换行符的问题.
+        -gitk指令
+        	--功能
+        		进入git自带的图形化统计页面来查看提交历史.
+        	--图形化页面意思
+        		请查看git书籍第7页.
+

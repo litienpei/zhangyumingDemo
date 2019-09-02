@@ -1,0 +1,24 @@
+
+CentOS7安装Mysql
+    1、Mysql5.7
+    https://my.oschina.net/weslie/blog/2054713
+    2、 Mysql 安装
+    https://www.imooc.com/article/15604
+    http://m.zhizuobiao.com/mysql/mysql-19012900008/
+    3、centeros 7和centeros 6 安装mysql
+    https://www.jianshu.com/p/913ae7abbb58
+
+安装 Java 8 以及Tomcat8
+    https://my.oschina.net/ruanjun/blog/736907
+
+CentOS7系统Nginx安装
+    1、https://my.oschina.net/u/228832/blog/800605
+    2、https://my.oschina.net/u/209161/blog/1930822
+    3、https://my.oschina.net/ghw/blog/1926157  yum安装Nginx
+    4、https://blog.csdn.net/zhanaolu4821/article/details/89405526
+
+centos7 开启端口防火墙配置(如开启3306或者80端口)
+    https://www.cnblogs.com/jpfss/p/10126015.html
+
+CentOS7查看开放端口命令
+    https://blog.csdn.net/codewarrior_/article/details/79570086

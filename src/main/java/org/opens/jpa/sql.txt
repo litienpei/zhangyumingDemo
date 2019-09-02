@@ -1,0 +1,9 @@
+一. 数据库相关
+    1.1 表结构
+        create table jpa_user
+         (
+         id int primary key auto_increment,
+         name varchar(30),
+         old int
+         )
+    1.2

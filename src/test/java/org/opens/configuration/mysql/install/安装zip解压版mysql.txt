@@ -1,0 +1,94 @@
+一.场景
+    1.1 简介
+        之所以安装这个5.7.27这个版本的mysql, 是因为我的电脑本身是8.0的mysql, 但是公司使用的是5.6.30这个版本的mysql,
+        移动起来数据简直不要太酸爽, 可以说是根本没法移动, 遂卸载了8.0安装了5.7.27这个版本, 以后就可以放假了也愉快的编程了.
+二.安装步骤及注意事项
+    2.1 下载
+        -下载地址
+            https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.27-winx64.zip
+    2.2 安装
+        1. 将下载好的zip解压到一个纯英文目录下
+        ↓(解压后的目录)
+            /根目录
+                /bin
+                /docs
+                /include
+                /lib
+                /share
+                COPYING
+                README
+        2. 新建/data目录和my.ini文件
+        ↓(新建/data目录和my.ini文件的目录)
+            /根目录
+                /bin
+                /docs
+                /include
+                /lib
+                /share
+                /data       #新建的
+                my.ini      #新建的
+                COPYING
+                README
+        3. 编辑my.ini文件(这个文件时mysql启动的配置文件, 可以参考springboot项目的yaml文件)
+            -my.ini
+                #代码开始
+                [Client]
+                #设置3306端口
+                port = 3306
+
+                [mysqld]
+                #设置3306端口
+                port = 3306
+                # 设置mysql的安装目录
+                basedir=D:\mysql-5.7
+                # 设置mysql数据库的数据的存放目录
+                datadir=D:\mysql-5.7/data
+                # 允许最大连接数
+                max_connections=200
+                # 服务端使用的字符集默认为8比特编码的latin1字符集
+                character-set-server=utf8
+                # 创建新表时将使用的默认存储引擎
+                default-storage-engine=INNODB
+                sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+
+                [mysql]
+                # 设置mysql客户端默认字符集
+                default-character-set=utf8
+                #代码结束
+            -说明
+                --不知道这么理解对不对
+                    Client下的port用来指定客户端连接的端口;
+                    mysqld下的port用来指定mysql服务使用的端口;
+                --其他修改的地方
+                    设置basedir为mysql的安装根目录;
+                    设置datadir为安装根目录下新建的data目录.
+        4. 添加系统环境变量
+            -在windows下
+                path变量中, 将mysql根目录下的/bin目录添加进去就可以了.
+        5. 指定启动配置文件和注册服务(以管理员权限打开cmd)
+            -指定启动配置文件
+                mysqld --defaults-file=my.ini --initialize-insecure
+            -注册服务
+                mysqld --install
+            -注意
+                由于是解压版, 还没有设置root用户的密码, 所以此时是连接不上mysql的, 因为默认是需要密码的.
+        6. 启动跳过密码然后进入mysql系统修改密码
+            -跳过密码启动
+                mysqld --skip-grant-tables
+                --注意
+                    mysqld是mysql的启动程序, 在执行该命令之后, 窗口会像启动tomcat服务器那样进入阻塞, 此时另开一个cmd,
+                    就可以无密码连接到mysql程序了.
+            -无密码登录后修改root用户的密码
+                --登录
+                    mysql -u root -p
+                    输入密码时直接回车(直接进入mysql系统)
+                --修改root用户的密码
+                    update mysql.user set authentication_string=password('修改的密码') where user='root' and Host ='localhost';
+                --刷新权限, 使更改生效
+                    flush privileges;
+                --然后就可以退出, 使用ctrl + c关闭掉"mysqld无密码启动窗口"了.
+                    但是还没有结束.
+        7. 开启mysql服务
+            -启动服务
+                启动服务指令: net start mysql
+                关闭服务指令: net stop mysql
